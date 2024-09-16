@@ -1,0 +1,83 @@
+# Install and load necessary package
+install.packages("data.table")
+library(data.table)
+
+# Read the dataset
+data <- fread("household_power_consumption.txt", na.strings = "?", sep = ";")
+
+# Convert 'Date' to Date class
+data$Date <- as.Date(data$Date, format = "%d/%m/%Y")
+
+# Subset data for 2007-02-01 and 2007-02-02
+subset_data <- subset(data, Date >= "2007-02-01" & Date <= "2007-02-02")
+
+# Create a DateTime column
+subset_data$DateTime <- as.POSIXct(paste(subset_data$Date, subset_data$Time), format = "%Y-%m-%d %H:%M:%S")
+
+# Define short day names and axis positions
+day_labels <- c("Thu", "Fri", "Sat")
+axis_positions <- seq(from = min(subset_data$DateTime), 
+                      to = max(subset_data$DateTime), 
+                      length.out = length(day_labels))
+
+
+# PLOT 1
+
+# Create Plot 1: Global Active Power histogram
+png("plot1.png", width = 480, height = 480)
+
+hist(subset_data$Global_active_power, col = "red", 
+     main = "Global Active Power", 
+     xlab = "Global Active Power (kilowatts)", 
+     ylab = "Frequency")
+
+dev.off()
+
+
+# PLOT 2
+
+# Create Plot 2: Global Active Power over time
+png("plot2.png", width = 480, height = 480)
+
+# Plot data with suppressed default x-axis
+plot(subset_data$DateTime, subset_data$Global_active_power, type = "l", 
+     xlab = "", ylab = "Global Active Power (kilowatts)", xaxt = "n")
+
+# Add custom x-axis labels
+axis(1, at = axis_positions, labels = day_labels, las = 2)
+
+dev.off()
+
+# PLOT 3
+
+# Create Plot 3: Energy Sub Metering
+png("plot3.png", width = 480, height = 480)
+
+# Plot the three sub-metering variables
+plot(subset_data$DateTime, subset_data$Sub_metering_1, type = "l", col = "black", 
+     xlab = "", ylab = "Energy sub metering", xaxt = "n")
+lines(subset_data$DateTime, subset_data$Sub_metering_2, col = "red")
+lines(subset_data$DateTime, subset_data$Sub_metering_3, col = "blue")
+
+# Add legend
+legend("topright", col = c("black", "red", "blue"), lty = 1, 
+       legend = c("Sub_metering_1", "Sub_metering_2", "Sub_metering_3"))
+
+# Add custom x-axis labels
+axis(1, at = axis_positions, labels = day_labels, las = 2)
+
+dev.off()
+
+# PLOT 4
+
+# Create Plot 4: Global Reactive Power over time
+png("plot4.png", width = 480, height = 480)
+
+# Plot data with suppressed default x-axis
+plot(subset_data$DateTime, subset_data$Global_reactive_power, type = "l", 
+     xlab = "DateTime", ylab = "Global Reactive Power (kilowatts)", xaxt = "n")
+
+# Add custom x-axis labels
+axis(1, at = axis_positions, labels = day_labels, las = 2)
+
+dev.off()
